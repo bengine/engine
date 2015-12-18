@@ -1,25 +1,247 @@
-/** \file Unity Static Assets Analyzer.
+/** @file Unity Static Assets Analyzer.
  */
 
-#ifndef USAA_H_
-#define USAA_H_
+#ifndef BE_USAA_H_
+#define BE_USAA_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "export.h"
 
-#if !defined(USAA_EXPORT)
-#   if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN32__)
-#       define USAA_EXPORT __declspec(dllexport)
-#   else
-#       define USAA_EXPORT
-#   endif /* !USAA_EXPORT */
-#endif
+/** USAA Classes Ordered by ID Number.
+ */
+#define USAA_GAME_OBJECT                        1
+#define USAA_COMPONENT                          2
+#define USAA_LEVEL_GAME_MANAGER                 3
+#define USAA_TRANSFORM                          4
+#define USAA_TIME_MANAGER                       5
+#define USAA_GLOBAL_GAME_MANAGER                6
+#define USAA_BEHAVIOUR                          8
+#define USAA_GAME_MANAGER                       9
+#define USAA_AUDIO_MANAGER                      11
+#define USAA_PARTICLE_ANIMATOR                  12
+#define USAA_INPUT_MANAGER                      13
+#define USAA_ELLIPSOID_PARTICLE_EMITTER         15
+#define USAA_PIPELINE                           17
+#define USAA_EDITOR_EXTENSION                   18
+#define USAA_PHYSICS2D_SETTINGS                 19
+#define USAA_CAMERA                             20
+#define USAA_MATERIAL                           21
+#define USAA_MESH_RENDERER                      23
+#define USAA_RENDERER                           25
+#define USAA_PARTICLE_RENDERER                  26
+#define USAA_TEXTURE                            27
+#define USAA_TEXTURE2D                          28
+#define USAA_SCENE_SETTINGS                     29
+#define USAA_GRAPHICS_SETTINGS                  30
+#define USAA_MESH_FILTER                        33
+#define USAA_OCCLUSION_PORTAL                   41
+#define USAA_MESH                               43
+#define USAA_SKYBOX                             45
+#define USAA_QUALITY_SETTINGS                   47
+#define USAA_SHADER                             48
+#define USAA_TEXT_ASSET                         49
+#define USAA_RIGIDBODY2D                        50
+#define USAA_PHYSICS2D_MANAGER                  51
+#define USAA_COLLIDER2D                         53
+#define USAA_RIGIDBODY                          54
+#define USAA_PHYSICS_MANAGER                    55
+#define USAA_COLLIDER                           56
+#define USAA_JOINT                              57
+#define USAA_CIRCLE_COLLIDER2D                  58
+#define USAA_HINGE_JOINT                        59
+#define USAA_POLYGON_COLLIDER2D                 60
+#define USAA_BOX_COLLIDER2D                     61
+#define USAA_PHYSICS_MATERIAL2D                 62
+#define USAA_MESH_COLLIDER                      64
+#define USAA_BOX_COLLIDER                       65
+#define USAA_SPRITE_COLLIDER2D                  66
+#define USAA_EDGE_COLLIDER2D                    68
+#define USAA_COMPUTE_SHADER                     72
+#define USAA_ANIMATION_CLIP                     74
+#define USAA_CONSTANT_FORCE                     75
+#define USAA_WORLD_PARTICLE_COLLIDER            76
+#define USAA_TAG_MANAGER                        78
+#define USAA_AUDIO_LISTENER                     81
+#define USAA_AUDIO_SOURCE                       82
+#define USAA_AUDIO_CLIP                         83
+#define USAA_RENDER_TEXTURE                     84
+#define USAA_MESH_PARTICLE_EMITTER              87
+#define USAA_PARTICLE_EMITTER                   88
+#define USAA_CUBEMAP                            89
+#define USAA_AVATAR                             90
+#define USAA_ANIMATOR_CONTROLLER                91
+#define USAA_GUI_LAYER                          92
+#define USAA_RUNTIME_ANIMATOR_CONTROLLER        93
+#define USAA_SCRIPT_MAPPER                      94
+#define USAA_ANIMATOR                           95
+#define USAA_TRAIL_RENDERER                     96
+#define USAA_DELAYED_CALL_MANAGER               98
+#define USAA_TEXT_MESH                          102
+#define USAA_RENDER_SETTINGS                    104
+#define USAA_LIGHT                              108
+#define USAA_CGPROGRAM                          109
+#define USAA_BASE_ANIMATION_TRACK               110
+#define USAA_ANIMATION                          111
+#define USAA_MONO_BEHAVIOUR                     114
+#define USAA_MONO_SCRIPT                        115
+#define USAA_MONO_MANAGER                       116
+#define USAA_TEXTURE3D                          117
+#define USAA_NEW_ANIMATION_TRACK                118
+#define USAA_PROJECTOR                          119
+#define USAA_LINE_RENDERER                      120
+#define USAA_FLARE                              121
+#define USAA_HALO                               122
+#define USAA_LENS_FLARE                         123
+#define USAA_FLARE_LAYER                        124
+#define USAA_HALO_LAYER                         125
+#define USAA_NAV_MESH_AREAS                     126
+#define USAA_HALO_MANAGER                       127
+#define USAA_FONT                               128
+#define USAA_PLAYER_SETTINGS                    129
+#define USAA_NAMED_OBJECT                       130
+#define USAA_GUI_TEXTURE                        131
+#define USAA_GUI_TEXT                           132
+#define USAA_GUI_ELEMENT                        133
+#define USAA_PHYSIC_MATERIAL                    134
+#define USAA_SPHERE_COLLIDER                    135
+#define USAA_CAPSULE_COLLIDER                   136
+#define USAA_SKINNED_MESH_RENDERER              137
+#define USAA_FIXED_JOINT                        138
+#define USAA_RAYCAST_COLLIDER                   140
+#define USAA_BUILD_SETTINGS                     141
+#define USAA_ASSET_BUNDLE                       142
+#define USAA_CHARACTER_CONTROLLER               143
+#define USAA_CHARACTER_JOINT                    144
+#define USAA_SPRING_JOINT                       145
+#define USAA_WHEEL_COLLIDER                     146
+#define USAA_RESOURCE_MANAGER                   147
+#define USAA_NETWORK_VIEW                       148
+#define USAA_NETWORK_MANAGER                    149
+#define USAA_PRELOAD_DATA                       150
+#define USAA_MOVIE_TEXTURE                      152
+#define USAA_CONFIGURABLE_JOINT                 153
+#define USAA_TERRAIN_COLLIDER                   154
+#define USAA_MASTER_SERVER_INTERFACE            155
+#define USAA_TERRAIN_DATA                       156
+#define USAA_LIGHTMAP_SETTINGS                  157
+#define USAA_WEBCAM_TEXTURE                     158
+#define USAA_EDITOR_SETTINGS                    159
+#define USAA_INTERACTIVE_CLOTH                  160
+#define USAA_CLOTH_RENDERER                     161
+#define USAA_EDITOR_USER_SETTINGS               162
+#define USAA_SKINNED_CLOTH                      163
+#define USAA_AUDIO_REVERB_FILTER                164
+#define USAA_AUDIO_HIGH_PASS_FILTER             165
+#define USAA_AUDIO_CHORUS_FILTER                166
+#define USAA_AUDIO_REVERB_ZONE                  167
+#define USAA_AUDIO_ECHO_FILTER                  168
+#define USAA_AUDIO_LOW_PASS_FILTER              169
+#define USAA_AUDIO_DISTORTION_FILTER            170
+#define USAA_SPARSE_TEXTURE                     171
+#define USAA_AUDIO_BEHAVIOUR                    180
+#define USAA_AUDIO_FILTER                       181
+#define USAA_WIND_ZONE                          182
+#define USAA_CLOTH                              183
+#define USAA_SUBSTANCE_ARCHIVE                  184
+#define USAA_PROCEDURAL_MATERIAL                185
+#define USAA_PROCEDURAL_TEXTURE                 186
+#define USAA_OFF_MESH_LINK                      191
+#define USAA_OCCLUSION_AREA                     192
+#define USAA_TREE                               193
+#define USAA_NAV_MESH_OBSOLETE                  194
+#define USAA_NAV_MESH_AGENT                     195
+#define USAA_NAV_MESH_SETTINGS                  196
+#define USAA_LIGHT_PROBES_LEGACY                197
+#define USAA_PARTICLE_SYSTEM                    198
+#define USAA_PARTICLE_SYSTEM_RENDERER           199
+#define USAA_SHADER_VARIANT_COLLECTION          200
+#define USAA_LOD_GROUP                          205
+#define USAA_BLENDTREE                          206
+#define USAA_MOTION                             207
+#define USAA_NAV_MESH_OBSTACLE                  208
+#define USAA_TERRAIN_INSTANCE                   210
+#define USAA_SPRITE_RENDERER                    212
+#define USAA_SPRITE                             213
+#define USAA_CACHED_SPRITE_ATLAS                214
+#define USAA_REFLECTION_PROBE                   215
+#define USAA_REFLECTION_PROBES                  216
+#define USAA_LIGHT_PROBE_GROUP                  220
+#define USAA_ANIMATOR_OVERRIDE_CONTROLLER       221
+#define USAA_CANVAS_RENDERER                    222
+#define USAA_CANVAS                             223
+#define USAA_RECT_TRANSFORM                     224
+#define USAA_CANVAS_GROUP                       225
+#define USAA_BILLBOARD_ASSET                    226
+#define USAA_BILLBOARD_RENDERER                 227
+#define USAA_SPEEDTREE_WIND_ASSET               228
+#define USAA_ANCHORED_JOINT2D                   229
+#define USAA_JOINT2D                            230
+#define USAA_SPRING_JOINT2D                     231
+#define USAA_DISTANCE_JOINT2D                   232
+#define USAA_HINGE_JOINT2D                      233
+#define USAA_SLIDER_JOINT2D                     234
+#define USAA_WHEEL_JOINT2D                      235
+#define USAA_NAV_MESH_DATA                      238
+#define USAA_AUDIO_MIXER                        240
+#define USAA_AUDIO_MIXER_CONTROLLER             241
+#define USAA_AUDIO_MIXER_GROUP_CONTROLLER       243
+#define USAA_AUDIO_MIXER_EFFECT_CONTROLLER      244
+#define USAA_AUDIO_MIXER_SNAPSHOT_CONTROLLER    245
+#define USAA_PHYSICS_UPDATE_BEHAVIOUR2D         246
+#define USAA_CONSTANT_FORCE2D                   247
+#define USAA_EFFECTOR2D                         248
+#define USAA_AREA_EFFECTOR2D                    249
+#define USAA_POINT_EFFECTOR2D                   250
+#define USAA_PLATFORM_EFFECTOR2D                251
+#define USAA_SURFACE_EFFECTOR2D                 252
+#define USAA_LIGHT_PROBES                       258
+#define USAA_SAMPLE_CLIP                        271
+#define USAA_AUDIO_MIXER_SNAPSHOT               272
+#define USAA_AUDIO_MIXER_GROUP                  273
+#define USAA_ASSET_BUNDLE_MANIFEST              290
+#define MSAA_PREFAB                             1001
+#define MSAA_EDITOR_EXTENSION_IMPL              1002
+#define MSAA_ASSET_IMPORTER                     1003
+#define MSAA_ASSET_DATABASE                     1004
+#define MSAA_MESH_3DS_IMPORTER                  1005
+#define MSAA_TEXTURE_IMPORTER                   1006
+#define MSAA_SHADER_IMPORTER                    1007
+#define MSAA_COMPUTE_SHADER_IMPORTER            1008
+#define MSAA_AVATAR_MASK                        1011
+#define MSAA_AUDIO_IMPORTER                     1020
+#define MSAA_HIERARCHY_STATE                    1026
+#define MSAA_GUID_SERIALIZER                    1027
+#define MSAA_ASSET_METADATA                     1028
+#define MSAA_DEFAULT_ASSET                      1029
+#define MSAA_DEFAULT_IMPORTER                   1030
+#define MSAA_TEXT_SCRIPT_IMPORTER               1031
+#define MSAA_SCENE_ASSET                        1032
+#define MSAA_NATIVE_FORMAT_IMPORTER             1034
+#define MSAA_MONO_IMPORTER                      1035
+#define MSAA_ASSET_SERVER_CACHE                 1037
+#define MSAA_LIBRARY_ASSET_IMPORTER             1038
+#define MSAA_MODEL_IMPORTER                     1040
+#define MSAA_FBX_IMPORTER                       1041
+#define MSAA_TRUETYPE_FONT_IMPORTER             1042
+#define MSAA_MOVIE_IMPORTER                     1044
+#define MSAA_EDITOR_BUILD_SETTINGS              1045
+#define MSAA_DDS_IMPORTER                       1046
+#define MSAA_INSPECTOR_EXPANDED_STATE           1048
+#define MSAA_ANNOTATION_MANAGER                 1049
+#define MSAA_PLUGIN_IMPORTER                    1050
+#define MSAA_EDITOR_USER_BUILD_SETTINGS         1051
+#define MSAA_PVR_IMPORTER                       1052
+#define MSAA_ASTC_IMPORTER                      1053
+#define MSAA_KTX_IMPORTER                       1054
+#define MSAA_ANIMATOR_STATE_TRANSITION          1101
+#define MSAA_ANIMATOR_STATE                     1102
+#define MSAA_HUMAN_TEMPLATE                     1105
+#define MSAA_ANIMATOR_STATE_MACHINE             1107
+#define MSAA_PREVIEW_ASSET_TYPE                 1108
+#define MSAA_ANIMATOR_TRANSITION                1109
+#define MSAA_SPEEDTREE_IMPORTER                 1110
+#define MSAA_ANIMATOR_TRANSITION_BASE           1111
+#define MSAA_SUBSTANCE_IMPORTER                 1112
+#define MSAA_LIGHTMAP_PARAMETERS                1113
+#define MSAA_LIGHTMAP_SNAPSHOT                  1120
 
-float USAA_EXPORT usaa_example();
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* !USAA_H_ */
+#endif /* !BE_USAA_H_ */

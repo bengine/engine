@@ -1,0 +1,24 @@
+#ifndef ${LIB}_EXPORT_H_
+#define ${LIB}_EXPORT_H_
+
+#if !defined(${LIB}_DECL)
+#  if defined(${LIB}_DECL_EXPORT)
+#    define ${LIB}_DECL_SHARED
+#  endif
+
+#  if defined(${LIB}_DECL_SHARED) /* shared library */
+#    if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN32__)
+#      if defined(${LIB}_DECL_EXPORT)
+#        define ${LIB}_DECL __declspec(dllexport)
+#      else
+#        define ${LIB}_DECL __declspec(dllimport)
+#      endif
+#    else
+#      define ${LIB}_DECL
+#    endif
+#  else /* static library */
+#    define ${LIB}_DECL
+#  endif
+#endif /* !${LIB}_DECL */
+
+#endif /* !${LIB}_EXPORT_H_ */

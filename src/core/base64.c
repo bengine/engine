@@ -1,8 +1,8 @@
 #include "base64.h"
 
-static const uint8_t _encode_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const base64_char_t _encode_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static const uint8_t _decode_table[] = {
+static const base64_char_t _decode_table[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -38,19 +38,19 @@ static const uint8_t _decode_table[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-static uint8_t _placeholder = '=';
+static const base64_char_t _placeholder = '=';
 
-static uint8_t _encode(uint8_t byte)
+static base64_char_t _encode(base64_char_t byte)
 {
     return _encode_table[byte];
 }
 
-static uint8_t _decode(uint8_t byte)
+static base64_char_t _decode(base64_char_t byte)
 {
     return _decode_table[byte];
 }
 
-void base64_encode1(uint8_t *const dest, const uint8_t *const src)
+void base64_encode1(base64_char_t *const dest, const base64_char_t *const src)
 {
     dest[0] = _encode((src[0] >> 2) & 0x3F);
     dest[1] = _encode(((src[0] << 4) & 0x30));
@@ -58,7 +58,7 @@ void base64_encode1(uint8_t *const dest, const uint8_t *const src)
     dest[3] = _placeholder;
 }
 
-void base64_encode2(uint8_t *const dest, const uint8_t *const src)
+void base64_encode2(base64_char_t *const dest, const base64_char_t *const src)
 {
     dest[0] = _encode((src[0] >> 2) & 0x3F);
     dest[1] = _encode(((src[0] << 4) & 0x30) | ((src[1] >> 4) & 0x0F));
@@ -66,7 +66,7 @@ void base64_encode2(uint8_t *const dest, const uint8_t *const src)
     dest[3] = _placeholder;
 }
 
-void base64_encode3(uint8_t *const dest, const uint8_t *const src)
+void base64_encode3(base64_char_t *const dest, const base64_char_t *const src)
 {
     dest[0] = _encode((src[0] >> 2) & 0x3F);
     dest[1] = _encode(((src[0] << 4) & 0x30) | ((src[1] >> 4) & 0x0F));
@@ -74,12 +74,12 @@ void base64_encode3(uint8_t *const dest, const uint8_t *const src)
     dest[3] = _encode(src[2] & 0x3F);
 }
 
-size_t base64_encode(uint8_t *const output, const uint8_t *const input, size_t inlen)
+size_t base64_encode(base64_char_t *const output, const base64_char_t *const input, size_t inlen)
 {
     size_t floor = (inlen / 3) * 3, len = inlen - floor;
-    const uint8_t *ptr = input;
-    const uint8_t *const end = input + floor;
-    uint8_t *optr = output;
+    const base64_char_t *ptr = input;
+    const base64_char_t *const end = input + floor;
+    base64_char_t *optr = output;
 
     /* encode complete triplet */
     for (; ptr < end; ptr += 3) {
@@ -104,12 +104,12 @@ size_t base64_encode(uint8_t *const output, const uint8_t *const input, size_t i
     return optr - output;
 }
 
-size_t base64_decode3(uint8_t *const dest, const uint8_t *const src)
+size_t base64_decode3(base64_char_t *const dest, const base64_char_t *const src)
 {
-    uint8_t b0 = _decode(src[0]);
-    uint8_t b1 = _decode(src[1]);
-    uint8_t b2 = _decode(src[2]);
-    uint8_t b3 = _decode(src[3]);
+    base64_char_t b0 = _decode(src[0]);
+    base64_char_t b1 = _decode(src[1]);
+    base64_char_t b2 = _decode(src[2]);
+    base64_char_t b3 = _decode(src[3]);
 
     /* make sure all characters were valid */
     if (b0 == 0xFF || b1 == 0xFF || b2 == 0xFF || b3 == 0xFF)
@@ -128,11 +128,11 @@ size_t base64_decode3(uint8_t *const dest, const uint8_t *const src)
     return 3;
 }
 
-size_t base64_decode(uint8_t *const output, const uint8_t *const input, size_t inlen)
+size_t base64_decode(base64_char_t *const output, const base64_char_t *const input, size_t inlen)
 {
-    const uint8_t *const end = input + inlen;
-    uint8_t *optr = output;
-    const uint8_t *ptr = input;
+    const base64_char_t *const end = input + inlen;
+    base64_char_t *optr = output;
+    const base64_char_t *ptr = input;
 
     /* decode complete triplet */
     for (; ptr < end; ptr += 4)
