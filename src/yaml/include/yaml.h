@@ -42,15 +42,15 @@
  * ERROR ID
  */
 
-#define YAML_E_OK	  	 0
-#define YAML_E_FAILD	-1
-#define YAML_E_MEMORY  	-2 /* Cannot allocate or reallocate a block of memory. */
-#define YAML_E_READER  	-3 /* Cannot read or decode the input stream. */
-#define YAML_E_SCANNER 	-4 /* Cannot scan the input stream. */
-#define YAML_E_PARSER  	-5 /* Cannot parse the input stream. */
-#define YAML_E_COMPOSER	-6 /* Cannot compose a YAML document. */
-#define YAML_E_WRITER  	-7 /* Cannot write to the output stream. */
-#define YAML_E_EMITTER 	-8 /* Cannot emit a YAML stream. */
+#define YAML_EOK	  	 0
+#define YAML_EFAILD	-1
+#define YAML_EMEMORY  	-2 /* Cannot allocate or reallocate a block of memory. */
+#define YAML_EREADER  	-3 /* Cannot read or decode the input stream. */
+#define YAML_ESCANNER 	-4 /* Cannot scan the input stream. */
+#define YAML_EPARSER  	-5 /* Cannot parse the input stream. */
+#define YAML_ECOMPOSER	-6 /* Cannot compose a YAML document. */
+#define YAML_EWRITER  	-7 /* Cannot write to the output stream. */
+#define YAML_EEMITTER 	-8 /* Cannot emit a YAML stream. */
 
 /**********************************************************************
  * BUFFER STRUCT AND OPERATOR
@@ -63,11 +63,11 @@
 	\
 	(buffer)->start = (type *)YAML_MALLOC((count) * sizeof(type)); \
 	if (!(buffer)->start) \
-		*(ret) = YAML_E_MEMORY; \
+		*(ret) = YAML_EMEMORY; \
 	else { \
 		(buffer)->last = (buffer)->pointer = (buffer)->start; \
 		(buffer)->end = (buffer)->start + (count); \
-		*(ret) = YAML_E_OK; \
+		*(ret) = YAML_EOK; \
 	} \
 } while (0)
 
@@ -87,11 +87,11 @@
 	\
 	(stack)->start = (type *)YAML_MALLOC((count) *sizeof(type)); \
 	if (!(stack)->start) \
-		*(ret) = YAML_E_MEMORY; \
+		*(ret) = YAML_EMEMORY; \
 	else { \
 		(stack)->top = (stack)->start; \
 		(stack)->end = (stack)->start + (count); \
-		*(ret) = YAML_E_OK; \
+		*(ret) = YAML_EOK; \
 	} \
 } while (0)
 
@@ -100,30 +100,31 @@
 	(stack)->start = (stack)->top = (stack)->end = NULL; \
 } while (0)
 
-#define YAML_STACK_LIMIT(stack, count) do { \
-	return ((stack)->top - (stack)->start < (count)) ? YAML_E_OK : YAML_E_MEMORY; \
+#define YAML_STACK_LIMIT(ret, stack, count) do { \
+	*(ret) = ((stack)->top - (stack)->start < (count)) ? YAML_EOK : YAML_EMEMORY; \
 } while (0)
 
-#define YAML_STACK_EXTEND(stack, type) do { \
+#define YAML_STACK_EXTEND(ret, stack, type) do { \
 	size_t new_count = ((stack)->end - (stack)->start) * 2; \
 	ptrdiff_t top_offset = (stack)->top - (stack)->start; \
 	\
 	type *new_start = (type *)YAML_REALLOC((stack)->start, new_count * sizeof(type)); \
 	if (!new_start) \
-		return YAML_E_MEMORY; \
-	\
-	(stack)->top = new_start + top_offset; \
-	(stack)->end = new_start + new_count; \
-	(stack)->start = new_start; \
-	return YAML_E_OK; \
+		*(ret) = YAML_EMEMORY; \
+	else { \
+		(stack)->top = new_start + top_offset; \
+		(stack)->end = new_start + new_count; \
+		(stack)->start = new_start; \
+		*(ret) = YAML_EOK; \
+	} \
 } while (0)
 
-#define YAML_STACK_PUSH(stack, type, value) do { \
-	if ((stack)->top != (stack)->end || YAML_STACK_EXTEND(stack, type) == YAML_E_OK) { \
+#define YAML_STACK_PUSH(ret, stack, type, value) do { \
+	*(ret) = ((stack)->top == (stack)->end) ? YAML_EMEMORY : YAML_EOK; \
+	if (*(ret)) \
+		YAML_STACK_EXTEND(&ret, stack, type); \
+	if (!*(ret)) \
 		*((stack)->top++) = (value); \
-		return YAML_E_OK; \
-	} \
-	return YAML_E_MEMORY; \
 } while (0)
 
 #define YAML_STACK_POP(stack) (*(--(stack)->top))
@@ -139,11 +140,11 @@
 	\
 	(queue)->start = (type *)YAML_MALLOC((count) * sizeof(type)); \
 	if (!(queue)->start) \
-		*(ret) = YAML_E_MEMORY; \
+		*(ret) = YAML_EMEMORY; \
 	else { \
 		(queue)->head = (queue)->tail = (queue)->start; \
 		(queue)->end = (queue)->start + (count); \
-		*(ret) = YAML_E_OK; \
+		*(ret) = YAML_EOK; \
 	} \
 } while (0)
 
@@ -152,9 +153,11 @@
 	(queue)->start = (queue)->head = (queue)->tail = (queue)->end = NULL; \
 } while (0)
 
-#define YAML_QUEUE_EMPTY(queue) ((queue)->head == (queue)->tail)
+#define YAML_QUEUE_EMPTY(ret, queue) do { \
+	*(ret) = ((queue)->head == (queue)->tail) ? YAML_EOK : YAML_EFAILD; \
+} while (0)
 
-#define YAML_QUEUE_EXTEND(queue, type) do { \
+#define YAML_QUEUE_EXTEND(ret, queue, type) do { \
 	ptrdiff_t count = ((queue)->end - (queue)->start); \
 	ptrdiff_t new_count = count * 2; \
 	ptrdiff_t length = (queue)->tail - (queue)->head; \
@@ -165,12 +168,13 @@
 	if (length == count) { \
 		type *new_start = (type *)YAML_REALLOC((queue)->start, new_count * sizeof(type)); \
 		if (!new_start) \
-			return YAML_E_MEMORY; \
-		\
-		(queue)->head = new_start + head_offset; \
-		(queue)->tail = new_start + tail_offset; \
-		(queue)->end = new_start + new_count; \
-		(queue)->start = new_start; \
+			*(ret) = YAML_EMEMORY; \
+		else { \
+			(queue)->head = new_start + head_offset; \
+			(queue)->tail = new_start + tail_offset; \
+			(queue)->end = new_start + new_count; \
+			(queue)->start = new_start; \
+		} \
 	} \
 	\
 	/* Move the queue at the beginning of the buffer */ \
@@ -180,48 +184,38 @@
 		(queue)->tail = (queue)->start + length; \
 		(queue)->head = (queue)->start; \
 	} \
-	return YAML_E_OK; \
+	*(ret) = YAML_EOK; \
 } while (0)
 
-#define YAML_QUEUE_ENQUEUE(queue, type, value) do { \
-	if ((queue)->tail != (queue)->end || YAML_QUEUE_EXTEND(queue, type) == YAML_E_OK) { \
+#define YAML_QUEUE_ENQUEUE(ret, queue, type, value) do { \
+	*(ret) = ((queue)->tail == (queue)->end) ? YAML_EMEMORY : YAML_EOK; \
+	if (*(ret)) \
+		YAML_QUEUE_EXTEND(&ret, queue, type); \
+	if (!*(ret)) \
 		*((queue)->tail++) = (value); \
-		return YAML_E_OK; \
-	} \
-	return YAML_E_MEMORY; \
 } while (0)
 
 #define YAML_QUEUE_DEQUEUE(queue) (*((queue)->head++))
 
-#define YAML_QUEUE_INSERT(queue, index, elem_type, value) do { \
+#define YAML_QUEUE_INSERT(ret, queue, index, elem_type, value) do { \
 	type *insert_pos = (queue)->head + (index); \
 	ptrdiff_t right_len = (queue)->tail - (queue)->head - (index); \
 	\
-	if ((queue)->tail != (queue)->end || YAML_QUEUE_EXTEND(queue, type) == YAML_E_OK) { \
-        memmove(insert_pos + 1, insert_pos, right_len * sizeof(type)); \
+	*(ret) = ((queue)->tail == (queue)->end) ? YAML_EMEMORY : YAML_EOK; \
+	if (*(ret)) \
+		YAML_QUEUE_EXTEND(&ret, queue, type); \
+	if (!*(ret)) { \
+		memmove(insert_pos + 1, insert_pos, right_len * sizeof(type)); \
 		*insert_pos = value; \
 		(queue)->tail++; \
-		return YAML_E_OK; \
 	} \
-	return YAML_E_MEMORY; \
 } while (0)
 
 /**********************************************************************
- *
  */
 
 typedef unsigned char yaml_byte_t;
 typedef unsigned char yaml_char_t;
-
-typedef struct {
-	int major;
-	int minor;
-} yaml_version_directive_t;
-
-typedef struct {
-	yaml_char_t *handle;
-	yaml_char_t *prefix;
-} yaml_tag_directive_t;
 
 typedef struct {
 	size_t index;
@@ -229,86 +223,79 @@ typedef struct {
 	size_t column;
 } yaml_mark_t;
 
-#define YAML_ENC_ANY		0 /* Let the parser choose the encoding. */
-#define YAML_ENC_UTF8		1 /* The default UTF-8 encoding. */
-#define YAML_ENC_UTF16LE	3 /* The UTF-16-LE encoding with BOM. */
-#define YAML_ENC_UTF16BE	4 /* The UTF-16-BE encoding with BOM. */
+#define YAML_ENCODING_ANY		0 /* Let the parser choose the encoding. */
+#define YAML_ENCODING_UTF8		1 /* The default UTF-8 encoding. */
+#define YAML_ENCODING_UTF16LE	3 /* The UTF-16-LE encoding with BOM. */
+#define YAML_ENCODING_UTF16BE	4 /* The UTF-16-BE encoding with BOM. */
 
-#define YAML_BR_ANY		0 /* Let the parser choose the break type. */
-#define YAML_BR_CR		1 /* Use CR for line breaks (Mac style). */
-#define YAML_BR_LN		3 /* Use LN for line breaks (Unix style). */
-#define YAML_BR_CRLN	4 /* Use CR LN for line breaks (DOS style). */
+#define YAML_BREAK_ANY		0 /* Let the parser choose the break type. */
+#define YAML_BREAK_CR		1 /* Use CR for line breaks (Mac style). */
+#define YAML_BREAK_LN		3 /* Use LN for line breaks (Unix style). */
+#define YAML_BREAK_CRLN		4 /* Use CR LN for line breaks (DOS style). */
 
-#define YAML_SSTYLE_ANY				0 /* Let the emitter choose the style. */
-#define YAML_SSTYLE_PLAIN			1 /* The plain scalar style. */
-#define YAML_SSTYLE_SINGLE_QUOTED	2 /* The single-quoted scalar style. */
-#define YAML_SSTYLE_DOUBLE_QUOTED	3 /* The double-quoted scalar style. */
-#define YAML_SSTYLE_LITERAL			4 /* The literal scalar style. */
-#define YAML_SSTYLE_FOLDED			5 /* The folded scalar style. */
+#define YAML_SCALAR_ANY				0 /* Let the emitter choose the style. */
+#define YAML_SCALAR_PLAIN			1 /* The plain scalar style. */
+#define YAML_SCALAR_SINGLE_QUOTED	2 /* The single-quoted scalar style. */
+#define YAML_SCALAR_DOUBLE_QUOTED	3 /* The double-quoted scalar style. */
+#define YAML_SCALAR_LITERAL			4 /* The literal scalar style. */
+#define YAML_SCALAR_FOLDED			5 /* The folded scalar style. */
 
-#define YAML_ESTYLE_ANY				0 /* Let the emitter choose the style. */
-#define YAML_ESTYLE_BLOCK			1 /* The block sequence style. */
-#define YAML_ESTYLE_FLOW			2 /* The flow sequence style. */
+#define YAML_SEQUENCE_ANY			0 /* Let the emitter choose the style. */
+#define YAML_SEQUENCE_BLOCK			1 /* The block sequence style. */
+#define YAML_SEQUENCE_FLOW			2 /* The flow sequence style. */
 
-#define YAML_MSTYLE_ANY				0 /* Let the emitter choose the style. */
-#define YAML_MSTYLE_BLOCK			1 /* The block mapping style. */
-#define YAML_MSTYLE_FLOW			2 /* The flow mapping style. */
+#define YAML_MAPPING_ANY			0 /* Let the emitter choose the style. */
+#define YAML_MAPPING_BLOCK			1 /* The block mapping style. */
+#define YAML_MAPPING_FLOW			2 /* The flow mapping style. */
 
-#define YAML_TKN_NO						0 /* An empty token. */
-#define YAML_TKN_STREAM_START			1 /* A STREAM-START token. */
-#define YAML_TKN_STREAM_END				2 /* A STREAM-END token. */
-#define YAML_TKN_VERSION_DIRECTIVE		3 /* A VERSION-DIRECTIVE token. */
-#define YAML_TKN_TAG_DIRECTIVE			4 /* A TAG-DIRECTIVE token. */
-#define YAML_TKN_DOCUMENT_START			5 /* A DOCUMENT-START token. */
-#define YAML_TKN_DOCUMENT_END			6 /* A DOCUMENT-END token. */
-#define YAML_TKN_BLOCK_SEQUENCE_START	7 /* A BLOCK-SEQUENCE-START token. */
-#define YAML_TKN_BLOCK_MAPPING_START	8 /* A BLOCK-SEQUENCE-END token. */
-#define YAML_TKN_BLOCK_END				9 /* A BLOCK-END token. */
-#define YAML_TKN_FLOW_SEQUENCE_START	10 /* A FLOW-SEQUENCE-START token. */
-#define YAML_TKN_FLOW_SEQUENCE_END		11 /* A FLOW-SEQUENCE-END token. */
-#define YAML_TKN_FLOW_MAPPING_START		12 /* A FLOW-MAPPING-START token. */
-#define YAML_TKN_FLOW_MAPPING_END		13 /* A FLOW-MAPPING-END token. */
-#define YAML_TKN_BLOCK_ENTRY			14 /* A BLOCK-ENTRY token. */
-#define YAML_TKN_FLOW_ENTRY				15 /* A FLOW-ENTRY token. */
-#define YAML_TKN_KEY					16 /* A KEY token. */
-#define YAML_TKN_VALUE					17 /* A VALUE token. */
-#define YAML_TKN_ALIAS					18 /* An ALIAS token. */
-#define YAML_TKN_ANCHOR					19 /* An ANCHOR token. */
-#define YAML_TKN_TAG					20 /* A TAG token. */
-#define YAML_TKN_SCALAR					21 /* A SCALAR token. */
+#define YAML_TOKEN_NO					0 /* An empty token. */
+#define YAML_TOKEN_STREAM_START			1 /* A STREAM-START token. */
+#define YAML_TOKEN_STREAM_END			2 /* A STREAM-END token. */
+#define YAML_TOKEN_VERSION_DIRECTIVE	3 /* A VERSION-DIRECTIVE token. */
+#define YAML_TOKEN_TAG_DIRECTIVE		4 /* A TAG-DIRECTIVE token. */
+#define YAML_TOKEN_DOCUMENT_START		5 /* A DOCUMENT-START token. */
+#define YAML_TOKEN_DOCUMENT_END			6 /* A DOCUMENT-END token. */
+#define YAML_TOKEN_BLOCK_SEQUENCE_START	7 /* A BLOCK-SEQUENCE-START token. */
+#define YAML_TOKEN_BLOCK_MAPPING_START	8 /* A BLOCK-SEQUENCE-END token. */
+#define YAML_TOKEN_BLOCK_END			9 /* A BLOCK-END token. */
+#define YAML_TOKEN_FLOW_SEQUENCE_START	10 /* A FLOW-SEQUENCE-START token. */
+#define YAML_TOKEN_FLOW_SEQUENCE_END	11 /* A FLOW-SEQUENCE-END token. */
+#define YAML_TOKEN_FLOW_MAPPING_START	12 /* A FLOW-MAPPING-START token. */
+#define YAML_TOKEN_FLOW_MAPPING_END		13 /* A FLOW-MAPPING-END token. */
+#define YAML_TOKEN_BLOCK_ENTRY			14 /* A BLOCK-ENTRY token. */
+#define YAML_TOKEN_FLOW_ENTRY				15 /* A FLOW-ENTRY token. */
+#define YAML_TOKEN_KEY					16 /* A KEY token. */
+#define YAML_TOKEN_VALUE					17 /* A VALUE token. */
+#define YAML_TOKEN_ALIAS					18 /* An ALIAS token. */
+#define YAML_TOKEN_ANCHOR					19 /* An ANCHOR token. */
+#define YAML_TOKEN_TAG					20 /* A TAG token. */
+#define YAML_TOKEN_SCALAR					21 /* A SCALAR token. */
 
 typedef struct {
 	int type;
-
 	union {
 		struct {
 			int encoding;
 		} stream_start;
-
 		struct {
 			yaml_char_t *value;
 		} alias;
-
 		struct {
 			yaml_char_t *value;
 		} anchor;
-
 		struct {
 			yaml_char_t *handle;
 			yaml_char_t *suffix;
 		} tag;
-
 		struct {
 			yaml_char_t *value;
 			size_t length;
 			int style;
 		} scalar;
-
 		struct {
 			int major;
 			int minor;
 		} version_directive;
-
 		struct {
 			yaml_char_t *handle;
 			yaml_char_t *prefix;
@@ -319,45 +306,46 @@ typedef struct {
 	yaml_mark_t end_mark;
 } yaml_token_t;
 
-#define YAML_EVT_NO					0 /* An empty event. */
-#define YAML_EVT_STREAM_START		1 /* A STREAM-START event. */
-#define YAML_EVT_STREAM_END			2 /* A STREAM-END event. */
-#define YAML_EVT_DOCUMENT_START		3 /* A DOCUMENT-START event. */
-#define YAML_EVT_DOCUMENT_END		4 /* A DOCUMENT-END event. */
-#define YAML_EVT_ALIAS				5 /* An ALIAS event. */
-#define YAML_EVT_SCALAR				6 /* A SCALAR event. */
-#define YAML_EVT_SEQUENCE_START		7 /* A SEQUENCE-START event. */
-#define YAML_EVT_SEQUENCE_END		8 /* A SEQUENCE-END event. */
-#define YAML_EVT_MAPPING_START		9 /* A MAPPING-START event. */
-#define YAML_EVT_MAPPING_END		10 /* A MAPPING-END event. */
+#define YAML_EVENT_NO				0 /* An empty event. */
+#define YAML_EVENT_STREAM_START		1 /* A STREAM-START event. */
+#define YAML_EVENT_STREAM_END		2 /* A STREAM-END event. */
+#define YAML_EVENT_DOCUMENT_START	3 /* A DOCUMENT-START event. */
+#define YAML_EVENT_DOCUMENT_END		4 /* A DOCUMENT-END event. */
+#define YAML_EVENT_ALIAS			5 /* An ALIAS event. */
+#define YAML_EVENT_SCALAR			6 /* A SCALAR event. */
+#define YAML_EVENT_SEQUENCE_START	7 /* A SEQUENCE-START event. */
+#define YAML_EVENT_SEQUENCE_END		8 /* A SEQUENCE-END event. */
+#define YAML_EVENT_MAPPING_START	9 /* A MAPPING-START event. */
+#define YAML_EVENT_MAPPING_END		10 /* A MAPPING-END event. */
+
+typedef struct {
+	yaml_char_t *handle;
+	yaml_char_t *prefix;
+} yaml_tag_directive_t;
 
 typedef struct {
 	int type;
-
 	union {
 		struct {
 			int encoding;
 		} stream_start;
-		
 		struct {
-			yaml_version_directive_t *version_directive;
-
+			struct {
+				int major;
+				int minor;
+			} version_directive;
 			struct {
 				yaml_tag_directive_t *start;
 				yaml_tag_directive_t *end;
 			} tag_directives;
-
 			int implicit;
 		} document_start;
-
 		struct {
 			int implicit;
 		} document_end;
-
 		struct {
 			yaml_char_t *anchor;
 		} alias;
-
 		struct {
 			yaml_char_t *anchor;
 			yaml_char_t *tag;
@@ -367,14 +355,12 @@ typedef struct {
 			int quoted_implicit;
 			int style;
 		} scalar;
-
 		struct {
 			yaml_char_t *anchor;
 			yaml_char_t *tag;
 			int implicit;
 			int style;
 		} sequence_start;
-
 		struct {
 			yaml_char_t *anchor;
 			yaml_char_t *tag;
@@ -450,14 +436,17 @@ typedef struct {
 } yaml_node_t;
 
 typedef struct {
-	YAML_STACK_STRUCT(yaml_node_t) nodes;
-	yaml_version_directive_t *version_directive;
-
+	struct {
+		int major;
+		int minor;
+	} version_directive;
 	struct {
 		yaml_tag_directive_t *start;
 		yaml_tag_directive_t *end;
 	} tag_directives;
 
+	YAML_STACK_STRUCT(yaml_node_t) nodes;
+	
 	int start_implicit;
 	int end_implicit;
 
@@ -517,9 +506,7 @@ typedef struct {
 	yaml_mark_t context_mark;
 
 	yaml_read_handler_t *read_handler;
-
 	void *read_handler_data;
-
 	union {
 		struct {
 			unsigned char *start;
@@ -694,7 +681,7 @@ YAML_DECL int yaml_stream_end_event_init(yaml_event_t *event);
  * Returns YAML_NO_ERROR if the function succeeded.
  */
 YAML_DECL int yaml_document_start_event_init(yaml_event_t *event,
-											 yaml_version_directive_t *version_directive,
+											 int ma, int min,
 											 yaml_tag_directive_t *tag_directives_start,
 											 yaml_tag_directive_t *tag_directives_end,
 											 int implicit);
@@ -741,8 +728,7 @@ YAML_DECL void yaml_event_destroy(yaml_event_t *event);
 
 /* Create a YAML document.
  */
-YAML_DECL int yaml_document_init(yaml_document_t *document,
-								 yaml_version_directive_t *version_directive,
+YAML_DECL int yaml_document_init(yaml_document_t *document, int major, int minor,
 								 yaml_tag_directive_t *tag_directives_start,
 								 yaml_tag_directive_t *tag_directives_end,
 								 int start_implicit, int end_implicit);
@@ -788,6 +774,7 @@ YAML_DECL int yaml_document_append_sequence_item(yaml_document_t *document, int 
 YAML_DECL int yaml_document_append_mapping_pair(yaml_document_t *document, int mapping, int key, int value);
 
 /* Initialize a parser.
+ * Returns YAML_E_OK if the function succeeded.
  */
 YAML_DECL int yaml_parser_init(yaml_parser_t *parser);
 
